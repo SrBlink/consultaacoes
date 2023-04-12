@@ -1,22 +1,33 @@
 import fastify from "fastify";
-import * as _serviceAcoes from "./services";
 import * as _types from "./interfaces/interfaces-requests";
-
+import { TratarRotas } from "./rotas/rotas";
+import { ObterCotacaoMoeda as _serviceCotacaoMoeda } from "./services/service-cotacao-moeda";
 const app = fastify();
 
-app.get<{ Params: _types.GetAcoes }>("/sigla-bolsa-valores/:sigla", async (request, reply) => {
-  const { sigla } = request.params;
+app.get<{ Params: _types.GetAcoes }>("/b3/:tipoativo/:sigla", async (request, reply) => {
+  const { sigla, tipoativo } = request.params;
 
-  if (sigla) reply.status(200).send(await _serviceAcoes.ObterSiteAcoes(sigla));
+  try {
+    const response = await TratarRotas(sigla, tipoativo);
 
-  reply.status(404).send({ error: "Sigla não foi encontrada" });
+    if (response?.Error) reply.status(404).send(response.Error);
+
+    reply.status(200).send(response);
+  } catch (error) {
+    reply.status(404).send(error);
+  }
 });
 
-app
-  .listen({
-    host: "0.0.0.0",
-    port: process.env.PORT ? Number(process.env.PORT) : 3333,
-  })
-  .then(() => {
-    console.log("HTTP Server ON!");
-  });
+app.get("/b3/cotacao-moeda", async (request, reply) => {
+  try {
+    var response = await _serviceCotacaoMoeda();
+
+    reply.status(200).send(response);
+  } catch (error) {
+    reply.status(404).send(error);
+  }
+});
+
+app.listen({ host: "0.0.0.0", port: process.env.PORT ? Number(process.env.PORT) : 3333 }).then(() => {
+  console.log("HTTP Server ON!");
+});
