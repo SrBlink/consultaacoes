@@ -1,4 +1,4 @@
-import fastify, { FastifyRequest, FastifyReply } from "fastify";
+import fastify from "fastify";
 import * as _serviceAcoes from "./services";
 import * as _types from "./interfaces/interfaces-requests";
 
